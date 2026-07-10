@@ -42,7 +42,7 @@
           type = lib.types.port;
           default = 3000;
           description = "Port to serve Excalidraw on";
-        };
+        }; # end of port
       }; # end of options
 
       config = lib.mkIf config.services.excalidraw.enable {
