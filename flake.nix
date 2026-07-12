@@ -11,10 +11,11 @@
     system = "x86_64-linux";
     pkgs = nixpkgs.legacyPackages.${system};
 
+    # [yarn package]
     excalidrawPackage = pkgs.mkYarnPackage {
       name = "excalidraw";
       src = ./.;
-      yarnHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAA";
+      yarnHash = "sha256-Fib09SBYwALGpa00t+f+xyFGbu+6hxIUME2M5wN6+5o="; # needed for yarn to download my depndcy
       buildPhase = ''
         export HOME=$TMPDIR
         yarn --offline build
@@ -29,7 +30,7 @@
     # The built package, if anyone wants it directly
     packages.${system}.default = excalidrawPackage;
 
-    # The NixOS module — this is what your system flake will use
+    # The NixOS module configs will use. i finally understand imports
     nixosModules.default = {
       config,
       lib,
