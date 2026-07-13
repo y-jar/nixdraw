@@ -12,20 +12,36 @@
     pkgs = nixpkgs.legacyPackages.${system};
 
     # [yarn package]
-    excalidrawPackage = pkgs.mkYarnPackage {
+    excalidrawPackage = pkgs.stdenv.mkDerivation (finalAttrs: {
       name = "excalidraw";
       src = ./.;
-      yarnHash = "sha256-Fib09SBYwALGpa00t+f+xyFGbu+6hxIUME2M5wN6+5o="; # needed for yarn to download my depndcy
-      buildPhase = ''
+
+      nativeBuildInputs = with pkgs; [
+        nodejs
+        yarn
+        python3 # node-gyp needs this sometimes
+      ];
+
+      # Yarn needs a writable home and cache
+      preBuild = ''
         export HOME=$TMPDIR
-        yarn --offline build
+        export YARN_CACHE_FOLDER=$TMPDIR/yarn-cache
+      ''; # end of prebuild
+
+      buildPhase = ''
+        runHook preBuild
+        yarn install --frozen-lockfile --ignore-scripts
+        yarn build
+        runHook postBuild
       ''; # end of build phase
+
       installPhase = ''
+        runHook preInstall
         mkdir -p $out
-        cp -r deps/excalidraw/build/* $out/
-      ''; # installPhase
-      distPhase = "true";
-    }; # end of excalidrawPackage
+        cp -r build/* $out/
+        runHook postInstall
+      ''; # end of install phase
+    }); # end of excalidrawPackage
   in {
     # The built package, if anyone wants it directly
     packages.${system}.default = excalidrawPackage;
